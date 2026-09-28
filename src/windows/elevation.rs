@@ -11,7 +11,9 @@
 
 use crate::error::{AppError, AppResult};
 use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, HWND};
-use windows_sys::Win32::Security::{GetTokenInformation, TokenElevation, TOKEN_ELEVATION, TOKEN_QUERY};
+use windows_sys::Win32::Security::{
+    GetTokenInformation, TokenElevation, TOKEN_ELEVATION, TOKEN_QUERY,
+};
 use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 use windows_sys::Win32::UI::Shell::ShellExecuteW;
 use windows_sys::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
@@ -53,7 +55,8 @@ fn to_wide(s: &str) -> Vec<u16> {
 /// process immediately afterward, letting the new elevated instance take
 /// over.
 pub fn relaunch_elevated() -> AppResult<()> {
-    let exe = std::env::current_exe().map_err(|e| AppError::Windows(format!("could not resolve own executable path: {e}")))?;
+    let exe = std::env::current_exe()
+        .map_err(|e| AppError::Windows(format!("could not resolve own executable path: {e}")))?;
 
     let exe_wide = to_wide(&exe.to_string_lossy());
     let verb_wide = to_wide("runas");
@@ -62,7 +65,11 @@ pub fn relaunch_elevated() -> AppResult<()> {
     let args_joined = args.join(" ");
     let args_wide = to_wide(&args_joined);
 
-    let params_ptr = if args_joined.is_empty() { std::ptr::null() } else { args_wide.as_ptr() };
+    let params_ptr = if args_joined.is_empty() {
+        std::ptr::null()
+    } else {
+        args_wide.as_ptr()
+    };
 
     let hwnd: HWND = unsafe { std::mem::zeroed() };
     let result = unsafe {
