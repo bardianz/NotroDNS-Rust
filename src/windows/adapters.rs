@@ -32,12 +32,16 @@ pub struct AdapterDnsConfig {
 pub(crate) fn validate_adapter_name(name: &str) -> AppResult<()> {
     let name = name.trim();
     if name.is_empty() {
-        return Err(AppError::Validation("adapter name must not be empty".into()));
+        return Err(AppError::Validation(
+            "adapter name must not be empty".into(),
+        ));
     }
     // netsh's own argument syntax uses `name="..."`; reject characters that
     // would break that syntax or that have no business in an adapter name.
     if name.contains(['"', '\n', '\r']) {
-        return Err(AppError::Validation("adapter name contains invalid characters".into()));
+        return Err(AppError::Validation(
+            "adapter name contains invalid characters".into(),
+        ));
     }
     Ok(())
 }
@@ -57,7 +61,9 @@ fn run_netsh(args: &[&str]) -> AppResult<String> {
         .map_err(|e| AppError::Windows(format!("failed to run netsh: {e}")))?;
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(AppError::Windows(format!("netsh {args:?} failed: {stderr}")));
+        return Err(AppError::Windows(format!(
+            "netsh {args:?} failed: {stderr}"
+        )));
     }
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
@@ -155,7 +161,10 @@ fn parse_dns_config(out: &str) -> AdapterDnsConfig {
             in_dns_block = false;
         }
     }
-    AdapterDnsConfig { dhcp, ipv4_servers: servers }
+    AdapterDnsConfig {
+        dhcp,
+        ipv4_servers: servers,
+    }
 }
 
 fn push_if_ip(servers: &mut Vec<String>, candidate: &str) {
@@ -198,7 +207,10 @@ Configuration for interface \"Ethernet\"
 ";
         let cfg = parse_dns_config(sample);
         assert!(!cfg.dhcp);
-        assert_eq!(cfg.ipv4_servers, vec!["1.1.1.1".to_string(), "1.0.0.1".to_string()]);
+        assert_eq!(
+            cfg.ipv4_servers,
+            vec!["1.1.1.1".to_string(), "1.0.0.1".to_string()]
+        );
     }
 
     #[test]
