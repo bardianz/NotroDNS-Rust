@@ -1,0 +1,53 @@
+[package]
+name = "notrodns"
+version = "0.1.0"
+edition = "2021"
+description = "NotroDNS — a lightweight Windows DNS manager"
+license = "MIT"
+authors = ["NotroDNS Contributors"]
+readme = "README.md"
+default-run = "notrodns"
+
+[[bin]]
+name = "notrodns"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "time", "net", "sync", "process"] }
+eframe = { version = "0.28", default-features = false, features = ["default_fonts", "glow"] }
+egui = "0.28"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+directories = "5"
+log = "0.4"
+env_logger = "0.11"
+rand = "0.8"
+
+# Windows-only bindings, used for: elevation detection/relaunch (UAC),
+# and nothing else — all DNS/adapter manipulation goes through `netsh`
+# (see src/windows/adapters.rs and src/windows/dns_set.rs) to keep the
+# dependency surface (and the resulting .exe) small.
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Threading",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[dev-dependencies]
+tempfile = "3"
+
+# Optimize for a small release .exe.
+# NOTE: panic = "abort" is compatible here because this binary has no
+# FFI call stack that relies on unwinding across the Rust/C boundary
+# (eframe/winit run entirely in-process). If you later embed this crate
+# as a cdylib consumed by another runtime, remove `panic = "abort"`.
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
