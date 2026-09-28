@@ -14,7 +14,9 @@ use std::process::Command;
 fn validate_ipv4(ip: &str) -> AppResult<()> {
     match ip.trim().parse::<IpAddr>() {
         Ok(IpAddr::V4(_)) => Ok(()),
-        Ok(IpAddr::V6(_)) => Err(AppError::Validation(format!("{ip} is an IPv6 address, expected IPv4"))),
+        Ok(IpAddr::V6(_)) => Err(AppError::Validation(format!(
+            "{ip} is an IPv6 address, expected IPv4"
+        ))),
         Err(_) => Err(AppError::Validation(format!("invalid IPv4 address: {ip}"))),
     }
 }
@@ -22,7 +24,9 @@ fn validate_ipv4(ip: &str) -> AppResult<()> {
 fn validate_ipv6(ip: &str) -> AppResult<()> {
     match ip.trim().parse::<IpAddr>() {
         Ok(IpAddr::V6(_)) => Ok(()),
-        Ok(IpAddr::V4(_)) => Err(AppError::Validation(format!("{ip} is an IPv4 address, expected IPv6"))),
+        Ok(IpAddr::V4(_)) => Err(AppError::Validation(format!(
+            "{ip} is an IPv4 address, expected IPv6"
+        ))),
         Err(_) => Err(AppError::Validation(format!("invalid IPv6 address: {ip}"))),
     }
 }
@@ -35,7 +39,9 @@ fn run_netsh(args: &[String]) -> AppResult<()> {
         .map_err(|e| AppError::Windows(format!("failed to run netsh: {e}")))?;
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(AppError::Windows(format!("netsh {arg_refs:?} failed: {stderr}")));
+        return Err(AppError::Windows(format!(
+            "netsh {arg_refs:?} failed: {stderr}"
+        )));
     }
     Ok(())
 }
@@ -50,9 +56,14 @@ pub fn set_ipv4_dns(adapter_name: &str, primary: &str, secondary: Option<&str>) 
     let name_arg = netsh_name_arg(adapter_name);
 
     run_netsh(&[
-        "interface".into(), "ip".into(), "set".into(), "dns".into(),
+        "interface".into(),
+        "ip".into(),
+        "set".into(),
+        "dns".into(),
         name_arg.clone(),
-        "static".into(), primary.trim().into(), "primary".into(),
+        "static".into(),
+        primary.trim().into(),
+        "primary".into(),
     ])?;
 
     if let Some(sec) = secondary {
@@ -60,9 +71,13 @@ pub fn set_ipv4_dns(adapter_name: &str, primary: &str, secondary: Option<&str>) 
         if !sec.is_empty() {
             validate_ipv4(sec)?;
             run_netsh(&[
-                "interface".into(), "ip".into(), "add".into(), "dns".into(),
+                "interface".into(),
+                "ip".into(),
+                "add".into(),
+                "dns".into(),
                 name_arg,
-                sec.into(), "index=2".into(),
+                sec.into(),
+                "index=2".into(),
             ])?;
         }
     }
@@ -77,9 +92,14 @@ pub fn set_ipv6_dns(adapter_name: &str, primary: &str, secondary: Option<&str>) 
     let name_arg = netsh_name_arg(adapter_name);
 
     run_netsh(&[
-        "interface".into(), "ipv6".into(), "set".into(), "dns".into(),
+        "interface".into(),
+        "ipv6".into(),
+        "set".into(),
+        "dns".into(),
         name_arg.clone(),
-        "static".into(), primary.trim().into(), "primary".into(),
+        "static".into(),
+        primary.trim().into(),
+        "primary".into(),
     ])?;
 
     if let Some(sec) = secondary {
@@ -87,9 +107,13 @@ pub fn set_ipv6_dns(adapter_name: &str, primary: &str, secondary: Option<&str>) 
         if !sec.is_empty() {
             validate_ipv6(sec)?;
             run_netsh(&[
-                "interface".into(), "ipv6".into(), "add".into(), "dns".into(),
+                "interface".into(),
+                "ipv6".into(),
+                "add".into(),
+                "dns".into(),
                 name_arg,
-                sec.into(), "index=2".into(),
+                sec.into(),
+                "index=2".into(),
             ])?;
         }
     }
@@ -101,8 +125,12 @@ pub fn restore_dhcp_ipv4(adapter_name: &str) -> AppResult<()> {
     validate_adapter_name(adapter_name)?;
     let name_arg = netsh_name_arg(adapter_name);
     run_netsh(&[
-        "interface".into(), "ip".into(), "set".into(), "dns".into(),
-        name_arg, "source=dhcp".into(),
+        "interface".into(),
+        "ip".into(),
+        "set".into(),
+        "dns".into(),
+        name_arg,
+        "source=dhcp".into(),
     ])
 }
 
@@ -111,8 +139,12 @@ pub fn restore_dhcp_ipv6(adapter_name: &str) -> AppResult<()> {
     validate_adapter_name(adapter_name)?;
     let name_arg = netsh_name_arg(adapter_name);
     run_netsh(&[
-        "interface".into(), "ipv6".into(), "set".into(), "dns".into(),
-        name_arg, "source=dhcp".into(),
+        "interface".into(),
+        "ipv6".into(),
+        "set".into(),
+        "dns".into(),
+        name_arg,
+        "source=dhcp".into(),
     ])
 }
 
