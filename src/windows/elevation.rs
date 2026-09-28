@@ -79,7 +79,7 @@ pub fn relaunch_elevated() -> AppResult<()> {
             exe_wide.as_ptr(),
             params_ptr,
             std::ptr::null(),
-            SW_SHOWNORMAL as i32,
+            SW_SHOWNORMAL,
         )
     };
 
