@@ -45,7 +45,9 @@ impl RestoreState {
     /// repeated "Apply" clicks never overwrite the *original* pre-NotroDNS
     /// configuration.
     pub fn record_if_absent(&mut self, adapter: &str, snapshot: AdapterSnapshot) {
-        self.snapshots.entry(adapter.to_string()).or_insert(snapshot);
+        self.snapshots
+            .entry(adapter.to_string())
+            .or_insert(snapshot);
     }
 
     pub fn take(&mut self, adapter: &str) -> Option<AdapterSnapshot> {
@@ -64,10 +66,19 @@ mod tests {
     #[test]
     fn record_if_absent_keeps_first_snapshot() {
         let mut state = RestoreState::default();
-        state.record_if_absent("Ethernet", AdapterSnapshot { dhcp: true, ipv4_servers: vec![] });
         state.record_if_absent(
             "Ethernet",
-            AdapterSnapshot { dhcp: false, ipv4_servers: vec!["1.1.1.1".into()] },
+            AdapterSnapshot {
+                dhcp: true,
+                ipv4_servers: vec![],
+            },
+        );
+        state.record_if_absent(
+            "Ethernet",
+            AdapterSnapshot {
+                dhcp: false,
+                ipv4_servers: vec!["1.1.1.1".into()],
+            },
         );
         let snap = state.snapshots.get("Ethernet").unwrap();
         assert!(snap.dhcp);
@@ -82,7 +93,10 @@ mod tests {
         let mut state = RestoreState::default();
         state.record_if_absent(
             "Wi-Fi",
-            AdapterSnapshot { dhcp: false, ipv4_servers: vec!["8.8.8.8".into()] },
+            AdapterSnapshot {
+                dhcp: false,
+                ipv4_servers: vec!["8.8.8.8".into()],
+            },
         );
         state.save_to(&path).unwrap();
 
