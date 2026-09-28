@@ -80,7 +80,11 @@ async fn dns_query_latency(ip: IpAddr) -> (Option<f64>, BenchStatus) {
     }
 
     let mut buf = [0u8; 512];
-    let recv = tokio::time::timeout(Duration::from_millis(BENCH_TIMEOUT_MS), socket.recv_from(&mut buf)).await;
+    let recv = tokio::time::timeout(
+        Duration::from_millis(BENCH_TIMEOUT_MS),
+        socket.recv_from(&mut buf),
+    )
+    .await;
     match recv {
         Ok(Ok((n, _))) if n >= 2 => {
             let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
@@ -88,10 +92,16 @@ async fn dns_query_latency(ip: IpAddr) -> (Option<f64>, BenchStatus) {
             if recv_txn == txn_id {
                 (Some(elapsed_ms), BenchStatus::Ok)
             } else {
-                (None, BenchStatus::Error("received a reply with a mismatched transaction ID".into()))
+                (
+                    None,
+                    BenchStatus::Error("received a reply with a mismatched transaction ID".into()),
+                )
             }
         }
-        Ok(Ok(_)) => (None, BenchStatus::Error("response too short to be a DNS reply".into())),
+        Ok(Ok(_)) => (
+            None,
+            BenchStatus::Error("response too short to be a DNS reply".into()),
+        ),
         Ok(Err(e)) => (None, BenchStatus::Error(e.to_string())),
         Err(_) => (None, BenchStatus::Timeout),
     }
@@ -117,7 +127,10 @@ async fn ping_latency(ip: IpAddr) -> Option<f64> {
 fn parse_ping_output(text: &str) -> Option<f64> {
     for token in text.split_whitespace() {
         if let Some(rest) = token.strip_prefix("time=") {
-            let digits: String = rest.chars().take_while(|c| c.is_ascii_digit() || *c == '.').collect();
+            let digits: String = rest
+                .chars()
+                .take_while(|c| c.is_ascii_digit() || *c == '.')
+                .collect();
             if let Ok(v) = digits.parse::<f64>() {
                 return Some(v);
             }
@@ -141,7 +154,10 @@ pub async fn benchmark_all(servers: &[DnsServer], with_ping: bool) -> Vec<BenchR
     for server in servers.iter().cloned() {
         let sem = semaphore.clone();
         handles.push(tokio::spawn(async move {
-            let _permit = sem.acquire_owned().await.expect("semaphore closed unexpectedly");
+            let _permit = sem
+                .acquire_owned()
+                .await
+                .expect("semaphore closed unexpectedly");
             let ip: IpAddr = match server.preferred_ip.parse() {
                 Ok(ip) => ip,
                 Err(_) => {
@@ -155,8 +171,18 @@ pub async fn benchmark_all(servers: &[DnsServer], with_ping: bool) -> Vec<BenchR
                 }
             };
             let (dns_latency_ms, status) = dns_query_latency(ip).await;
-            let ping_latency_ms = if with_ping { ping_latency(ip).await } else { None };
-            BenchResult { server_name: server.name, ip: server.preferred_ip, dns_latency_ms, ping_latency_ms, status }
+            let ping_latency_ms = if with_ping {
+                ping_latency(ip).await
+            } else {
+                None
+            };
+            BenchResult {
+                server_name: server.name,
+                ip: server.preferred_ip,
+                dns_latency_ms,
+                ping_latency_ms,
+                status,
+            }
         }));
     }
 
@@ -191,7 +217,7 @@ mod tests {
         assert_eq!(&packet[2..4], &[0x01, 0x00]); // flags: recursion desired
         assert_eq!(&packet[4..6], &[0x00, 0x01]); // QDCOUNT = 1
         assert_eq!(&packet[6..8], &[0x00, 0x00]); // ANCOUNT = 0
-        // "example" label
+                                                  // "example" label
         assert_eq!(packet[12], 7);
         assert_eq!(&packet[13..20], b"example");
         // "com" label
@@ -217,10 +243,34 @@ mod tests {
     #[test]
     fn sorts_ok_before_failed_and_failed_by_name() {
         let mut results = vec![
-            BenchResult { server_name: "Zeta".into(), ip: "1.1.1.1".into(), dns_latency_ms: None, ping_latency_ms: None, status: BenchStatus::Timeout },
-            BenchResult { server_name: "Alpha".into(), ip: "8.8.8.8".into(), dns_latency_ms: Some(40.0), ping_latency_ms: None, status: BenchStatus::Ok },
-            BenchResult { server_name: "Beta".into(), ip: "9.9.9.9".into(), dns_latency_ms: None, ping_latency_ms: None, status: BenchStatus::Unresolved },
-            BenchResult { server_name: "Gamma".into(), ip: "1.0.0.1".into(), dns_latency_ms: Some(10.0), ping_latency_ms: None, status: BenchStatus::Ok },
+            BenchResult {
+                server_name: "Zeta".into(),
+                ip: "1.1.1.1".into(),
+                dns_latency_ms: None,
+                ping_latency_ms: None,
+                status: BenchStatus::Timeout,
+            },
+            BenchResult {
+                server_name: "Alpha".into(),
+                ip: "8.8.8.8".into(),
+                dns_latency_ms: Some(40.0),
+                ping_latency_ms: None,
+                status: BenchStatus::Ok,
+            },
+            BenchResult {
+                server_name: "Beta".into(),
+                ip: "9.9.9.9".into(),
+                dns_latency_ms: None,
+                ping_latency_ms: None,
+                status: BenchStatus::Unresolved,
+            },
+            BenchResult {
+                server_name: "Gamma".into(),
+                ip: "1.0.0.1".into(),
+                dns_latency_ms: Some(10.0),
+                ping_latency_ms: None,
+                status: BenchStatus::Ok,
+            },
         ];
         sort_results(&mut results);
         let names: Vec<&str> = results.iter().map(|r| r.server_name.as_str()).collect();
