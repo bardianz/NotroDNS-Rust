@@ -20,7 +20,10 @@ impl DnsCache {
             .duration_since(UNIX_EPOCH)
             .map(|d| d.as_secs())
             .unwrap_or(0);
-        Self { servers, fetched_at_unix: now }
+        Self {
+            servers,
+            fetched_at_unix: now,
+        }
     }
 
     /// Age of this cache entry, in seconds, relative to "now". Returns `0`
