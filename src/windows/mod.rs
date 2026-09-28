@@ -38,27 +38,47 @@ mod stub {
     }
 
     pub fn list_adapters() -> AppResult<Vec<Adapter>> {
-        Err(AppError::Windows("adapter management is only supported on Windows".into()))
+        Err(AppError::Windows(
+            "adapter management is only supported on Windows".into(),
+        ))
     }
 
     pub fn get_current_dns(_adapter_name: &str) -> AppResult<AdapterDnsConfig> {
-        Err(AppError::Windows("adapter management is only supported on Windows".into()))
+        Err(AppError::Windows(
+            "adapter management is only supported on Windows".into(),
+        ))
     }
 
-    pub fn set_ipv4_dns(_adapter_name: &str, _primary: &str, _secondary: Option<&str>) -> AppResult<()> {
-        Err(AppError::Windows("DNS configuration is only supported on Windows".into()))
+    pub fn set_ipv4_dns(
+        _adapter_name: &str,
+        _primary: &str,
+        _secondary: Option<&str>,
+    ) -> AppResult<()> {
+        Err(AppError::Windows(
+            "DNS configuration is only supported on Windows".into(),
+        ))
     }
 
-    pub fn set_ipv6_dns(_adapter_name: &str, _primary: &str, _secondary: Option<&str>) -> AppResult<()> {
-        Err(AppError::Windows("DNS configuration is only supported on Windows".into()))
+    pub fn set_ipv6_dns(
+        _adapter_name: &str,
+        _primary: &str,
+        _secondary: Option<&str>,
+    ) -> AppResult<()> {
+        Err(AppError::Windows(
+            "DNS configuration is only supported on Windows".into(),
+        ))
     }
 
     pub fn restore_dhcp_ipv4(_adapter_name: &str) -> AppResult<()> {
-        Err(AppError::Windows("DNS configuration is only supported on Windows".into()))
+        Err(AppError::Windows(
+            "DNS configuration is only supported on Windows".into(),
+        ))
     }
 
     pub fn restore_dhcp_ipv6(_adapter_name: &str) -> AppResult<()> {
-        Err(AppError::Windows("DNS configuration is only supported on Windows".into()))
+        Err(AppError::Windows(
+            "DNS configuration is only supported on Windows".into(),
+        ))
     }
 
     pub fn is_elevated() -> bool {
@@ -66,7 +86,9 @@ mod stub {
     }
 
     pub fn relaunch_elevated() -> AppResult<()> {
-        Err(AppError::Windows("elevation is only supported on Windows".into()))
+        Err(AppError::Windows(
+            "elevation is only supported on Windows".into(),
+        ))
     }
 }
 #[cfg(not(windows))]
