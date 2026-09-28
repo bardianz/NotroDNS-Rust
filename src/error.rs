@@ -25,7 +25,9 @@ impl fmt::Display for AppError {
             AppError::Serde(s) => write!(f, "Data error: {s}"),
             AppError::Windows(s) => write!(f, "Windows error: {s}"),
             AppError::Validation(s) => write!(f, "Validation error: {s}"),
-            AppError::NotElevated => write!(f, "Administrator privileges are required for this action"),
+            AppError::NotElevated => {
+                write!(f, "Administrator privileges are required for this action")
+            }
         }
     }
 }
