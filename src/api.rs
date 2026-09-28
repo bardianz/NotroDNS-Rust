@@ -84,11 +84,31 @@ mod tests {
     #[test]
     fn sanitize_drops_invalid_entries() {
         let input = vec![
-            DnsServer { name: "Good".into(), preferred_ip: "1.1.1.1".into(), alternate_ip: "1.0.0.1".into() },
-            DnsServer { name: "".into(), preferred_ip: "8.8.8.8".into(), alternate_ip: "".into() },
-            DnsServer { name: "Bad IP".into(), preferred_ip: "nope".into(), alternate_ip: "".into() },
-            DnsServer { name: "Bad alt".into(), preferred_ip: "8.8.8.8".into(), alternate_ip: "nope".into() },
-            DnsServer { name: "No alt is fine".into(), preferred_ip: "9.9.9.9".into(), alternate_ip: "".into() },
+            DnsServer {
+                name: "Good".into(),
+                preferred_ip: "1.1.1.1".into(),
+                alternate_ip: "1.0.0.1".into(),
+            },
+            DnsServer {
+                name: "".into(),
+                preferred_ip: "8.8.8.8".into(),
+                alternate_ip: "".into(),
+            },
+            DnsServer {
+                name: "Bad IP".into(),
+                preferred_ip: "nope".into(),
+                alternate_ip: "".into(),
+            },
+            DnsServer {
+                name: "Bad alt".into(),
+                preferred_ip: "8.8.8.8".into(),
+                alternate_ip: "nope".into(),
+            },
+            DnsServer {
+                name: "No alt is fine".into(),
+                preferred_ip: "9.9.9.9".into(),
+                alternate_ip: "".into(),
+            },
         ];
         let out = sanitize_servers(input);
         assert_eq!(out.len(), 2);
